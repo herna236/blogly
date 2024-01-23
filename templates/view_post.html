@@ -3,35 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ post.title }}</title>
+    <title>View Post</title>
 </head>
 <body>
     <h1>{{ post.title }}</h1>
+    <p>By {{ user.full_name }}</p>
     <p>{{ post.content }}</p>
-    
-    {% if post.user %}  
-        <p>Author: {{ post.user.first_name }} {{ post.user.last_name }}
-        <br>
-        Created at: {{ post.created_at.strftime('%Y-%m-%d') }}
+
+    <p>Tags:</p>
+    <ul>
+    {% if post.tags_associated %}
+        {% for tag in post.tags_associated %}
+            <li>{{ tag.name }}</li>
+        {% endfor %}
     {% else %}
-        <p>Author: Unknown</p>
+        <li>No tags associated with this post.</li>
     {% endif %}
-    <br>
-    
-    <form method="get" action="{{ url_for('edit_post', post_id=post.id) }}" style="display: inline;">
-       {% if csrf_token %}
-       <input type="hidden" name="csrf_token" value="{{ csrf_token}}">
-        {% endif %} 
-        <button type="submit">Edit</button>
+    </ul>
+
+    <a href="{{ url_for('view_user', user_id=user.id) }}">Back to User</a>
+
+    <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit">Delete Post</button>
     </form>
-   
-    <form method="post" action="{{ url_for('delete_post', post_id=post.id) }}" style="display:inline;">
-        {% if csrf_token %}
-            <input type="hidden" name="csrf_token" value="{{ csrf_token}}">
-        {% endif %}
-        <button type="submit">Delete</button>
-    </form>
-    <br>
-    <a href="{{ url_for('view_user', user_id=post.user_id) }}">Back to User</a>
 </body>
 </html>

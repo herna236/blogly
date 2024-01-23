@@ -1,7 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Post</title>
 </head>
 <body>
     <h1>Add Post</h1>
-   
+
     <form method="POST" action="{{ url_for('add_post', user_id=user.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label for="title">Title:</label>
@@ -10,6 +16,19 @@
         <label for="content">Content:</label>
         <textarea id="content" name="content" rows="4" required></textarea>
         <br>
+
+        
+        <fieldset>
+            <legend>Add Tag(s)</legend>
+            {% for tag in tags %}
+                <label>
+                    <input type="checkbox" name="tags[]" value="{{ tag.id }}">
+                    {{ tag.name }}
+                </label>
+                <br>
+            {% endfor %}
+        </fieldset>
+
         <button type="submit">Add Post</button>
     </form>
     <br>

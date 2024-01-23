@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
-from models import db, connect_db, User, Post
+from models import db, connect_db, User, Post, Tag
 from flask_migrate import Migrate
 import secrets
 from flask_wtf.csrf import validate_csrf
 from werkzeug.exceptions import abort
 from wtforms import ValidationError
 from flask_wtf.csrf import generate_csrf
-from flask_wtf.csrf import CSRFProtect
+
 
 
 
@@ -78,40 +78,55 @@ def view_user(user_id):
 
     return render_template('view_user.html', user=user, posts=posts, csrf_token=csrf_token)
 
-
 @app.route('/users/<int:user_id>/posts/new', methods=['GET', 'POST'])
 def add_post(user_id):
     user = User.query.get_or_404(user_id)
+    tags = Tag.query.all()
 
     if request.method == 'POST':
-        
         try:
             validate_csrf(request.form.get('csrf_token'))
         except ValidationError:
             abort(400, 'Invalid CSRF token')
 
-       
         new_post = Post(
             title=request.form['title'],
             content=request.form['content'],
             user_id=user.id
         )
         db.session.add(new_post)
+
+        selected_tags = request.form.getlist('tags')
+        for tag_id in selected_tags:
+            tag = Tag.query.get(tag_id)
+            if tag:
+                new_post.tags.append(tag)
+
         db.session.commit()
         flash('Post added successfully!', 'success')
         return redirect(url_for('view_user', user_id=user.id))
 
-   
     csrf_token = generate_csrf()
-    return render_template('add_post_form.html', user=user, csrf_token=csrf_token)
+    return render_template('add_post_form.html', user=user, tags=tags, csrf_token=csrf_token)
 
-@app.route('/posts/<int:post_id>')
+
+    
+
+   
+    
+
+@app.route('/posts/<int:post_id>', endpoint='view_post')
 def view_post(post_id):
     post = Post.query.get_or_404(post_id)
     user = User.query.get_or_404(post.user_id)
     csrf_token = generate_csrf() 
+    tags = post.tags_associated
+    print(f"Tags associated with the post: {tags}")
     
-    return render_template('view_post.html', post=post, user=user, csrf_token=csrf_token)
+    
+
+    return render_template('view_post.html', post=post, user=user, tags=tags, csrf_token=csrf_token)
+
 
 
 @app.route('/posts/<int:post_id>/edit', methods=['GET', 'POST'])
@@ -130,11 +145,47 @@ def edit_post(post_id):
 
 @app.route('/posts/<int:post_id>/delete', methods=['POST'])
 def delete_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    db.session.delete(post)
-    db.session.commit()
-    flash('Post deleted successfully!', 'success')
-    return redirect(url_for('view_user', user_id=post.user_id))
+    post = Post.query.get(post_id)
+
+    if post:
+        db.session.delete(post)
+        db.session.commit()
+        flash('Post deleted successfully!', 'success')
+        return redirect(url_for('view_user', user_id=post.user_id))
+    else:
+        flash('Post not found!', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/tags', methods=['GET', 'POST'])
+def tags_list():
+    tags = Tag.query.all()
+    return render_template('tags_list.html', tags=tags)
+
+@app.route('/tags/new', methods=['GET', 'POST'])
+def new_tag():
+    csrf_token = generate_csrf()  
+    if request.method == 'POST':
+        try:
+            validate_csrf(request.form.get('csrf_token'))
+        except ValidationError:
+            abort(400, 'Invalid CSRF token')
+
+        tag_name = request.form['tag_name']
+        new_tag = Tag(name=tag_name)
+        db.session.add(new_tag)
+        db.session.commit()
+    
+        return redirect(url_for('tags_list'))
+
+    csrf_token = generate_csrf()
+    return render_template('new_tag_form.html', csrf_token=csrf_token)
+
+@app.route('/tags/<int:tag_id>/posts')
+def posts_by_tag(tag_id):
+    tag = Tag.query.get_or_404(tag_id)
+    posts = tag.posts.all()
+    return render_template('posts_by_tag.html', tag=tag, posts=posts)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

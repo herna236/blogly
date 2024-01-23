@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Tag</title>
+</head>
+<body>
+    <h1>Add New Tag</h1>
+    
+    <form method="post" action="{{ url_for('new_tag') }}">
+        {% if csrf_token %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        {% endif %} 
+        <label for="tag_name">Tag Name:</label>
+        <input type="text" id="tag_name" name="tag_name" required>
+        
+        <button type="submit">Add Tag</button>
+    </form>
+    
+    <a href="{{ url_for('tags_list') }}">Back to Tag List</a>
+</body>
+</html>

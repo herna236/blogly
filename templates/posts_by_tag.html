@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posts by Tag</title>
+</head>
+<body>
+    <h1>Posts with Tag: {{ tag.name }}</h1>
+    
+    <ul>
+        {% for post in posts %}
+            <li>{{ post.title }} by {{ post.user.full_name }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('tags_list') }}">Back to Tags</a>
+</body>
+</html>
