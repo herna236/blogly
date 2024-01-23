@@ -1,7 +1,12 @@
+import os 
 import unittest
 from flask import url_for
 from flask_testing import TestCase  
-from app import app, db, User
+from app import app, User, db
+from flask_sqlalchemy import SQLAlchemy
+
+
+
 
 class TestApp(TestCase):
 
@@ -9,6 +14,7 @@ class TestApp(TestCase):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///test_db'
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['WTF_CSRF_ENABLED'] = False  
         return app
 
     def setUp(self):
