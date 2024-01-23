@@ -28,7 +28,7 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='posts') 
     tags = db.relationship('Tag', secondary='post_tag', backref='posts_associated', cascade='all, delete-orphan', single_parent=True)
-    tags_associated = db.relationship('Tag', secondary='post_tag', backref='posts_associated_tags', lazy='dynamic')
+    tags_associated = db.relationship('Tag', secondary='post_tag', backref='posts', lazy='dynamic')
     
     def __repr__(self):
         return f"<Post {self.title} by User {self.user_id}>"
