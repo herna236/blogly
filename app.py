@@ -96,14 +96,13 @@ def add_post(user_id):
         )
         db.session.add(new_post)
 
-        selected_tags = request.form.getlist('tags')
+        selected_tags = request.form.getlist('tags[]')
         for tag_id in selected_tags:
             tag = Tag.query.get(tag_id)
             if tag:
                 new_post.tags.append(tag)
 
         db.session.commit()
-        flash('Post added successfully!', 'success')
         return redirect(url_for('view_user', user_id=user.id))
 
     csrf_token = generate_csrf()
@@ -120,7 +119,7 @@ def view_post(post_id):
     post = Post.query.get_or_404(post_id)
     user = User.query.get_or_404(post.user_id)
     csrf_token = generate_csrf() 
-    tags = post.tags_associated
+    tags = post.tags
     print(f"Tags associated with the post: {tags}")
     
     
@@ -132,22 +131,29 @@ def view_post(post_id):
 @app.route('/posts/<int:post_id>/edit', methods=['GET', 'POST'])
 def edit_post(post_id):
     post = Post.query.get_or_404(post_id)
-    csrf_token = generate_csrf()  
-    
+    csrf_token = generate_csrf()
+    all_tags = Tag.query.all()
+
     if request.method == 'POST':
         post.title = request.form['title']
         post.content = request.form['content']
+
+       
+        selected_tags_ids = request.form.getlist('tags[]')
+        post.tags = Tag.query.filter(Tag.id.in_(selected_tags_ids)).all()
+
         db.session.commit()
-        flash('Post updated successfully!', 'success')
+
         return redirect(url_for('view_post', post_id=post.id))
 
-    return render_template('edit_post_form.html', post=post, csrf_token=csrf_token)
+    return render_template('edit_post_form.html', post=post, csrf_token=csrf_token, all_tags=all_tags)
 
 @app.route('/posts/<int:post_id>/delete', methods=['POST'])
 def delete_post(post_id):
     post = Post.query.get(post_id)
 
     if post:
+        db.session.refresh(post)
         db.session.delete(post)
         db.session.commit()
         flash('Post deleted successfully!', 'success')
@@ -183,8 +189,10 @@ def new_tag():
 @app.route('/tags/<int:tag_id>/posts')
 def posts_by_tag(tag_id):
     tag = Tag.query.get_or_404(tag_id)
-    posts = tag.posts.all()
-    return render_template('posts_by_tag.html', tag=tag, posts=posts)
+    posts = tag.posts
+    users = {post.id: User.query.get_or_404(post.user_id) for post in posts}
+    return render_template('posts_by_tag.html', tag=tag, posts=posts, users=users)
+
 
 
 if __name__ == '__main__':

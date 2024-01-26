@@ -28,7 +28,9 @@
                 <br>
             {% endfor %}
         </fieldset>
-
+        <form method="get" action="{{ url_for('new_tag') }}">
+            <button type="submit" class="button">Create New Tag</button>
+        </form>
         <button type="submit">Add Post</button>
     </form>
     <br>

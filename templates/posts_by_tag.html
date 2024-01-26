@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posts by Tag</title>
+    <title>Posts by Tag: {{ tag.name }}</title>
 </head>
 <body>
     <h1>Posts with Tag: {{ tag.name }}</h1>
     
     <ul>
         {% for post in posts %}
-            <li>{{ post.title }} by {{ post.user.full_name }}</li>
+            <li><a href="{{ url_for('view_post', post_id=post.id) }}">{{ post.title }}</a> by {{ users[post.id].full_name }}</li>
         {% endfor %}
     </ul>
 

@@ -16,6 +16,7 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     image_url = db.Column(db.String(255), default='default_image_url.jpg')  
+    posts = db.relationship('Post', backref='author', cascade='all, delete-orphan', single_parent=True)
 
     def __repr__(self):
         return f"<User {self.first_name} {self.last_name}>"
@@ -26,9 +27,11 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref='posts') 
-    tags = db.relationship('Tag', secondary='post_tag', backref='posts_associated', cascade='all, delete-orphan', single_parent=True)
-    tags_associated = db.relationship('Tag', secondary='post_tag', backref='posts', lazy='dynamic')
+    tags = db.relationship('Tag', secondary='post_tag', backref='posts', cascade='all, delete-orphan', single_parent=True)
+    tags_associated = db.relationship('Tag', secondary='post_tag', backref='posts_associated', lazy='dynamic')
+
+    def __repr__(self):
+        return f"<Post {self.title} by User {self.user_id}>"
     
     def __repr__(self):
         return f"<Post {self.title} by User {self.user_id}>"
